@@ -6,23 +6,22 @@ import { Poppins } from "next/font/google";
 import { UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
+import MobileSidebar from "@/components/mobile-sidebar";
 
 const font = Poppins({
   weight: "600",
   subsets: ["latin"],
 });
 
-const Navbar = () => {
-  console.log("Hello server");
-
+const Topbar = () => {
   return (
-    <nav
+    <header
       className={
-        "fixed z-50 flex w-full items-center justify-between border-b border-primary/10 bg-secondary px-4 py-2"
+        "fixed z-50 flex h-16 w-full items-center justify-between border-b border-primary/10 bg-secondary px-4 py-2"
       }
     >
-      <div className={"flex items-center"}>
-        <Menu className={"block md:hidden"} />
+      <nav className={"flex items-center"}>
+        <MobileSidebar />
         <Link href={"/"}>
           <h1
             className={cn(
@@ -33,7 +32,7 @@ const Navbar = () => {
             Chat Persona
           </h1>
         </Link>
-      </div>
+      </nav>
       <div className={"flex items-center gap-x-3"}>
         <ModeToggle />
         <Button variant={"premium"} size={"sm"}>
@@ -41,8 +40,8 @@ const Navbar = () => {
         </Button>
         <UserButton />
       </div>
-    </nav>
+    </header>
   );
 };
 
-export default Navbar;
+export default Topbar;
