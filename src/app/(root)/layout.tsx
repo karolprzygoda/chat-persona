@@ -1,11 +1,11 @@
 import Topbar from "@/components/topbar";
 import Sidebar from "@/components/sidebar";
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) => {
   return (
     <div className={"h-full"}>
       <Topbar />
@@ -15,4 +15,6 @@ export default function RootLayout({
       <main className={"h-full pt-16 md:pl-20"}>{children}</main>
     </div>
   );
-}
+};
+
+export default RootLayout;
