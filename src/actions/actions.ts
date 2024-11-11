@@ -1,9 +1,14 @@
 "use server";
 
-import { createPersonaSchema, TCreatePersonaSchema } from "@/schemas/schema";
-import { currentUser } from "@clerk/nextjs/server";
-import { supabase } from "@/lib/supabaseClient";
+import {
+  createPersonaSchema,
+  TAuthSchema,
+  TCreatePersonaSchema,
+} from "@/schemas/schema";
+import { createClient } from "@/lib/supabase/supabaseServer";
 import prismadb from "@/lib/prismadb";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export type StateType = {
   title: string;
@@ -13,9 +18,13 @@ export type StateType = {
 
 export const createPersonaAction = async (formData: TCreatePersonaSchema) => {
   try {
-    const user = await currentUser();
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-    if (!user || !user.id || !user.firstName) {
+    if (!user || authError) {
       return {
         title: "Error",
         message: "Unauthorized",
@@ -54,7 +63,7 @@ export const createPersonaAction = async (formData: TCreatePersonaSchema) => {
       data: {
         categoryId,
         userId: user.id,
-        userName: user.firstName,
+        userName: user.user_metadata.name,
         src: data.fullPath,
         name,
         description,
@@ -77,3 +86,47 @@ export const createPersonaAction = async (formData: TCreatePersonaSchema) => {
     } as StateType;
   }
 };
+
+export async function login(formData: TAuthSchema) {
+  const supabase = await createClient();
+
+  const data = {
+    email: formData.email,
+    password: formData.password,
+  };
+
+  const { error } = await supabase.auth.signInWithPassword(data);
+
+  if (error) {
+    return {
+      title: "Error",
+      message: error.message,
+      variant: "destructive",
+    } as StateType;
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/");
+}
+
+export async function signup(formData: TAuthSchema) {
+  const supabase = await createClient();
+
+  const data = {
+    email: formData.email,
+    password: formData.password,
+  };
+
+  const { error } = await supabase.auth.signUp(data);
+
+  if (error) {
+    return {
+      title: "Error",
+      message: error.message,
+      variant: "destructive",
+    } as StateType;
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/");
+}

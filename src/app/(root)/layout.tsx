@@ -1,19 +1,47 @@
-import Topbar from "@/components/topbar";
-import Sidebar from "@/components/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import Header from "@/components/header";
+import { createClient } from "@/lib/supabase/supabaseServer";
+import { redirect } from "next/navigation";
+import { UserProvider } from "@/components/user-provider";
 
-const RootLayout = ({
+const RootLayout = async ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
   return (
-    <div className={"h-full"}>
-      <Topbar />
-      <div className={"fixed inset-y-0 mt-16 hidden w-20 flex-col md:flex"}>
-        <Sidebar />
-      </div>
-      <main className={"h-full pt-16 md:pl-20"}>{children}</main>
-    </div>
+    <UserProvider user={user}>
+      <SidebarProvider
+        defaultOpen={false}
+        style={{
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
+          "--sidebar-width": "15rem",
+          "--sidebar-width-icon": "4rem",
+        }}
+      >
+        <AppSidebar />
+        <SidebarInset>
+          <Header />
+          <main className={"h-full"}>{children}</main>
+        </SidebarInset>
+      </SidebarProvider>
+    </UserProvider>
   );
 };
 
