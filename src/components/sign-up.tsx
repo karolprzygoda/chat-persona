@@ -59,11 +59,11 @@ export function SignUp() {
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid grid-cols-2 gap-6">
-              <Button disabled={isLoading} variant="outline">
+              <Button type={"button"} disabled={isLoading} variant="outline">
                 <Icons.gitHub className="mr-2 h-4 w-4" />
                 Github
               </Button>
-              <Button disabled={isLoading} variant="outline">
+              <Button type={"button"} disabled={isLoading} variant="outline">
                 <Icons.google className="mr-2 h-4 w-4" />
                 Google
               </Button>
@@ -116,7 +116,11 @@ export function SignUp() {
             />
           </CardContent>
           <CardFooter className={"flex flex-col"}>
-            <Button disabled={isLoading} className="w-full font-semibold">
+            <Button
+              type={"submit"}
+              disabled={isLoading}
+              className="w-full font-semibold"
+            >
               {isLoading ? "Authentication..." : "Sign Up"}
             </Button>
             <div className="mt-4 text-center text-sm">

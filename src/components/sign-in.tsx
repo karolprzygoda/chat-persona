@@ -23,7 +23,7 @@ import { useForm } from "react-hook-form";
 import { authSchema, TAuthSchema } from "@/schemas/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { login } from "@/actions/actions";
+import { login, loginWithGitHub, loginWithGoogle } from "@/actions/actions";
 import { toast } from "@/hooks/use-toast";
 
 export function SignIn() {
@@ -47,6 +47,30 @@ export function SignIn() {
     }
   };
 
+  async function signInWithGithub() {
+    const { title, message, variant } = await loginWithGitHub();
+
+    if (title || message || variant) {
+      toast({
+        title,
+        description: message,
+        variant,
+      });
+    }
+  }
+
+  async function signInWithGoogle() {
+    const { title, message, variant } = await loginWithGoogle();
+
+    if (title || message || variant) {
+      toast({
+        title,
+        description: message,
+        variant,
+      });
+    }
+  }
+
   const isLoading = form.formState.isSubmitting;
 
   return (
@@ -59,11 +83,21 @@ export function SignIn() {
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid grid-cols-2 gap-6">
-              <Button disabled={isLoading} variant="outline">
+              <Button
+                type={"button"}
+                onClick={signInWithGithub}
+                disabled={isLoading}
+                variant="outline"
+              >
                 <Icons.gitHub className="mr-2 h-4 w-4" />
                 Github
               </Button>
-              <Button disabled={isLoading} variant="outline">
+              <Button
+                onClick={signInWithGoogle}
+                type={"button"}
+                disabled={isLoading}
+                variant="outline"
+              >
                 <Icons.google className="mr-2 h-4 w-4" />
                 Google
               </Button>
@@ -116,7 +150,11 @@ export function SignIn() {
             />
           </CardContent>
           <CardFooter className={"flex flex-col"}>
-            <Button disabled={isLoading} className="w-full font-semibold">
+            <Button
+              type={"submit"}
+              disabled={isLoading}
+              className="w-full font-semibold"
+            >
               {isLoading ? "Authentication..." : "Sign In"}
             </Button>
             <div className="mt-4 text-center text-sm">

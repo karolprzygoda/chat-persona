@@ -130,3 +130,51 @@ export async function signup(formData: TAuthSchema) {
   revalidatePath("/", "layout");
   redirect("/");
 }
+
+export async function loginWithGitHub() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "github",
+    options: {
+      redirectTo: "http://localhost:3000",
+    },
+  });
+
+  console.log(data, error);
+
+  if (error) {
+    return {
+      title: "Error",
+      message: error.message,
+      variant: "destructive",
+    } as StateType;
+  } else {
+    return redirect(data.url);
+  }
+}
+
+export async function loginWithGoogle() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: "http://localhost:3000",
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
+    },
+  });
+
+  console.log(data, error);
+
+  if (error) {
+    return {
+      title: "Error",
+      message: error.message,
+      variant: "destructive",
+    } as StateType;
+  } else {
+    return redirect(data.url);
+  }
+}
