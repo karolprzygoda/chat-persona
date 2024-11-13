@@ -4,14 +4,11 @@ import Header from "@/components/header";
 import { createClient } from "@/lib/supabase/supabaseServer";
 import { redirect } from "next/navigation";
 import { UserProvider } from "@/components/user-provider";
-import background from "../../../public/docs-background.webp";
 
 const RootLayout = async ({
   children,
-  modal,
 }: Readonly<{
   children: React.ReactNode;
-  modal: React.ReactNode;
 }>) => {
   const supabase = await createClient();
   const {
@@ -41,10 +38,7 @@ const RootLayout = async ({
         <AppSidebar />
         <SidebarInset>
           <Header />
-          <main className={"h-full"}>
-            {modal}
-            {children}
-          </main>
+          <main className={"h-full"}>{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </UserProvider>

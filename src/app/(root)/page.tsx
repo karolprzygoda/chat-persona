@@ -1,10 +1,8 @@
-import SearchInput from "@/components/search-input";
 import prismadb from "@/lib/prismadb";
-import Categories from "@/components/categories";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const HomePage = async () => {
-  const categories = await prismadb.category.findMany();
-
   return (
     <div></div>
     // <div className={"h-full space-y-2 p-4"}>

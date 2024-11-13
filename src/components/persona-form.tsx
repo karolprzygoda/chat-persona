@@ -1,55 +1,55 @@
 "use client";
 
-import { Category, Persona } from "@prisma/client";
+import {
+  MultiStepForm,
+  MultiStepFormContextProvider,
+  MultiStepFormFooter,
+  MultiStepFormHeader,
+  MultiStepFormStep,
+} from "@/components/ui/multi-step-form";
+import { createPersonaSchema, TCreatePersonaSchema } from "@/schemas/schema";
+import Stepper from "@/components/ui/stepper";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Category } from "@prisma/client";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Separator } from "@/components/ui/separator";
-import ImageUpload from "@/components/image-upload";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Wand2 } from "lucide-react";
-import { useRef } from "react";
+  AvatarStep,
+  BasicInfoStep,
+  InstructionsStep,
+  SeedStep,
+} from "@/components/persona-form-steps";
 import { createPersonaAction } from "@/actions/actions";
 import { toast } from "@/hooks/use-toast";
-import { createPersonaSchema, TCreatePersonaSchema } from "@/schemas/schema";
+import { Button } from "@/components/ui/button";
 
-type PersonaFormProps = {
-  initialData: Persona | null;
-  categories: Category[];
-};
+const titles = [
+  "Add an avatar to your persona",
+  "Provide some basic information's",
+  "Provide some instructions for your Persona",
+  "Provide example conversation",
+];
 
-const PersonaForm = ({ initialData, categories }: PersonaFormProps) => {
-  const formRef = useRef<HTMLFormElement>(null);
+const PersonaForm = ({ categories }: { categories: Category[] }) => {
   const form = useForm<TCreatePersonaSchema>({
     resolver: zodResolver(createPersonaSchema),
-    defaultValues: initialData || {
-      avatar: undefined,
-      name: "",
-      description: "",
-      categoryId: undefined,
+    defaultValues: {
+      avatar: {
+        path: "",
+        file: null,
+      },
+      basicInfo: {
+        name: "",
+        description: "",
+        categoryId: undefined,
+      },
       instructions: "",
       seed: "",
     },
+    reValidateMode: "onBlur",
+    mode: "onBlur",
   });
 
-  const isLoading = form.formState.isLoading;
+  const isSubmitting = form.formState.isSubmitting;
 
   const onSubmit = async (data: TCreatePersonaSchema) => {
     const { title, message, variant } = await createPersonaAction(data);
@@ -61,178 +61,70 @@ const PersonaForm = ({ initialData, categories }: PersonaFormProps) => {
   };
 
   return (
-    <div className={"mx-auto h-full max-w-3xl space-y-2 p-4"}>
-      <Form {...form}>
-        <form
-          ref={formRef}
-          className={"space-y-8"}
-          onSubmit={form.handleSubmit(onSubmit)}
-        >
-          <div className={"w-full space-y-2"}>
-            <div>
-              <h3 className={"text-lg font-medium"}>General Information</h3>
-              <p className={"text-sm text-muted-foreground"}>
-                General information about your Persona
-              </p>
-            </div>
-            <Separator className={"bg-primary/10"} />
-          </div>
-          <FormField
-            name={"avatar"}
-            render={({ field }) => (
-              <FormItem
-                className={
-                  "flex flex-col items-center justify-center space-y-4"
-                }
-              >
-                <FormControl>
-                  <ImageUpload
-                    value={field.value}
-                    onChange={field.onChange}
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className={"grid grid-cols-1 gap-4 md:grid-cols-2"}>
-            <FormField
-              name={"name"}
-              control={form.control}
-              render={({ field }) => (
-                <FormItem className={"col-span-2 md:col-span-1"}>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isLoading}
-                      placeholder={"Elon Musk"}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    This is how your AI Persona will be named.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
+    <MultiStepForm
+      className={"flex flex-col justify-around p-4 md:gap-10"}
+      schema={createPersonaSchema}
+      form={form}
+      onSubmit={onSubmit}
+    >
+      <MultiStepFormHeader className={"flex w-full flex-col justify-center"}>
+        <MultiStepFormContextProvider>
+          {({ currentStepIndex }) => (
+            <>
+              <h2 className={"text-xl font-bold md:h-auto md:min-h-fit"}>
+                {titles[currentStepIndex]}
+              </h2>
+              <Stepper
+                steps={["Avatar", "Basic Info", "Instructions", "Seed"]}
+                className={"my-6 md:my-10"}
+                currentStep={currentStepIndex}
+              />
+            </>
+          )}
+        </MultiStepFormContextProvider>
+      </MultiStepFormHeader>
+      <MultiStepFormStep name="avatar">
+        <AvatarStep />
+      </MultiStepFormStep>
+      <MultiStepFormStep name="basicInfo">
+        <BasicInfoStep categories={categories} />
+      </MultiStepFormStep>
+      <MultiStepFormStep name="instructions">
+        <InstructionsStep />
+      </MultiStepFormStep>
+      <MultiStepFormStep name="seed">
+        <SeedStep isSubmitting={isSubmitting} />
+      </MultiStepFormStep>
+      <MultiStepFormFooter className={"flex w-full justify-end space-x-4"}>
+        <MultiStepFormContextProvider>
+          {({ isFirstStep, isLastStep, isStepValid, nextStep, prevStep }) => (
+            <>
+              {!isFirstStep && (
+                <Button type={"button"} variant={"outline"} onClick={prevStep}>
+                  Previous
+                </Button>
               )}
-            />
-            <FormField
-              name={"description"}
-              control={form.control}
-              render={({ field }) => (
-                <FormItem className={"col-span-2 md:col-span-1"}>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isLoading}
-                      placeholder={"CEO & Founder of Tesla"}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Short description for your AI Persona.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
+              {isLastStep ? (
+                <Button
+                  disabled={!isStepValid() || isSubmitting}
+                  type={"submit"}
+                >
+                  Create!
+                </Button>
+              ) : (
+                <Button
+                  className={isFirstStep ? "w-full md:w-auto" : ""}
+                  disabled={!isStepValid()}
+                  onClick={nextStep}
+                >
+                  Next
+                </Button>
               )}
-            />
-            <FormField
-              name={"categoryId"}
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select
-                    disabled={isLoading}
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className={"bg-background"}>
-                        <SelectValue
-                          defaultValue={field.value}
-                          placeholder={"Select a Category"}
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Select a category of your AI
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className={"w-full space-y-2"}>
-            <div>
-              <h3 className={"text-lg font-medium"}>Configuration</h3>
-              <p>Detailed instructions for AI behaviour</p>
-            </div>
-            <Separator className={"bg-primary/10"} />
-          </div>
-          <FormField
-            name={"instructions"}
-            control={form.control}
-            render={({ field }) => (
-              <FormItem className={"col-span-2 md:col-span-1"}>
-                <FormLabel>Instructions</FormLabel>
-                <FormControl>
-                  <Textarea
-                    className={"resize-none bg-background"}
-                    rows={7}
-                    disabled={isLoading}
-                    placeholder={"instructions for your AI"}
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Describe in detail your persona backstory and relevant
-                  details.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            name={"seed"}
-            control={form.control}
-            render={({ field }) => (
-              <FormItem className={"col-span-2 md:col-span-1"}>
-                <FormLabel>Example Conversation</FormLabel>
-                <FormControl>
-                  <Textarea
-                    className={"resize-none bg-background"}
-                    rows={7}
-                    disabled={isLoading}
-                    placeholder={"example of your conversation"}
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Describe example conversation.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className={"flex w-full justify-center"}>
-            <Button size={"lg"} disabled={isLoading}>
-              {initialData ? "Edit your persona" : "Create your persona"}
-              <Wand2 className={"ml-2 h-4 w-4"} />
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </div>
+            </>
+          )}
+        </MultiStepFormContextProvider>
+      </MultiStepFormFooter>
+    </MultiStepForm>
   );
 };
 

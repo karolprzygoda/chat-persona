@@ -81,7 +81,7 @@ export function MultiStepForm<T extends z.ZodType>({
     <MultiStepFormContext.Provider value={multiStepForm}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={cn(className, "flex size-full flex-col overflow-hidden")}
+        className={cn(className, "flex size-full flex-col overflow-x-hidden")}
       >
         {header}
 

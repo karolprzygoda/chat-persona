@@ -12,8 +12,6 @@ export default function Stepper({
   currentStep,
   className,
 }: StepperProps) {
-  console.log("Stepper props:", { steps, currentStep, className });
-
   if (!steps || steps.length === 0) {
     console.log("No steps provided");
     return <div>No steps provided</div>;

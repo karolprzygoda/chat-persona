@@ -1,17 +1,21 @@
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { UploadCloud, X } from "lucide-react";
 
+type Avatar = {
+  path: string;
+  file: FileList | null;
+};
+
 type ImageUploadProps = {
-  value: string;
-  onChange: (src: FileList | null) => void;
+  value: Avatar;
+  onChange: (avatar: Avatar | null) => void;
   disabled?: boolean;
 };
 
 const ImageUpload = ({ value, onChange, disabled }: ImageUploadProps) => {
-  const [preview, setPreview] = useState<string | null>(value || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -20,29 +24,34 @@ const ImageUpload = ({ value, onChange, disabled }: ImageUploadProps) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
-        setPreview(result);
-        onChange(event.target.files);
+        onChange({
+          path: result,
+          file: event.target.files,
+        });
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleClear = () => {
-    setPreview(null);
-    onChange(null);
+    onChange({
+      path: "",
+      file: null,
+    });
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center rounded-lg border-4 border-dashed border-primary/10">
-      {preview ? (
-        <div className="relative m-4 h-40 w-40">
+    <div className="relative flex w-full items-center justify-center">
+      {value.file && value.path ? (
+        <div className="relative aspect-square max-h-[520px]">
           <Image
-            fill
+            width={512}
+            height={512}
             alt="Preview"
-            src={preview}
+            src={value.path}
             className="rounded-lg object-cover"
           />
           <Button
@@ -59,16 +68,16 @@ const ImageUpload = ({ value, onChange, disabled }: ImageUploadProps) => {
       ) : (
         <label
           htmlFor="dropzone-file"
-          className="flex cursor-pointer flex-col items-center justify-center"
+          className="flex aspect-square max-h-[520px] w-full max-w-[520px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed transition hover:border-primary/70"
         >
-          <div className="m-4 flex flex-col items-center justify-center pb-6 pt-5 transition hover:opacity-75">
+          <div className="flex flex-col items-center justify-center pb-6 pt-5">
             <UploadCloud className="mb-3 h-10 w-10 text-gray-400" />
             <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
               <span className="font-semibold">Click to upload</span> or drag and
               drop
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              SVG, PNG, JPG or GIF (MAX. 800x400px)
+              PNG or JPG (MAX. 50 MB)
             </p>
           </div>
           <Input

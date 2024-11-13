@@ -42,14 +42,18 @@ export const createPersonaAction = async (formData: TCreatePersonaSchema) => {
       } as StateType;
     }
 
-    const { categoryId, avatar, name, description, instructions, seed } =
-      validatedPersona.data;
+    const {
+      basicInfo: { categoryId, name, description },
+      avatar,
+      instructions,
+      seed,
+    } = validatedPersona.data;
 
-    const fileName = `${Date.now()}_${avatar?.[0].name}`;
+    const fileName = `${Date.now()}_${user.id}_${avatar.file?.[0].name}`;
 
     const { data, error } = await supabase.storage
       .from("personas-avatars")
-      .upload(fileName, avatar!);
+      .upload(fileName, avatar.file!);
 
     if (error || !data) {
       return {
@@ -71,6 +75,8 @@ export const createPersonaAction = async (formData: TCreatePersonaSchema) => {
         seed,
       },
     });
+
+    revalidatePath("/");
 
     return {
       title: "Success",
