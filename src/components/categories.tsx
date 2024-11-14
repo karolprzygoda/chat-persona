@@ -28,28 +28,30 @@ const Categories = ({ data }: CategoriesProps) => {
   };
 
   return (
-    <div className={"flex w-full space-x-2 overflow-x-auto p-1"}>
-      <button
-        onClick={() => onClick(undefined)}
-        className={cn(
-          "flex items-center rounded-md bg-primary/10 px-2 py-2 text-center text-xs transition hover:opacity-75 md:px-4 md:py-3 md:text-sm",
-          !categoryId ? "bg-primary/25" : "bg-primary/10",
-        )}
-      >
-        Newest
-      </button>
-      {data.map((item) => (
+    <div className={"overflow-x-clip"}>
+      <div className={"flex w-full space-x-2 overflow-x-auto py-4"}>
         <button
-          onClick={() => onClick(item.id)}
-          key={item.id}
+          onClick={() => onClick(undefined)}
           className={cn(
-            "flex items-center rounded-md bg-primary/10 px-2 py-2 text-center text-xs transition hover:opacity-75 md:px-4 md:py-3 md:text-sm",
-            item.id === categoryId ? "bg-primary/25" : "bg-primary/10",
+            "flex items-center rounded-md border bg-card px-2 py-2 text-center text-xs transition hover:opacity-75 md:px-4 md:py-3 md:text-sm",
+            !categoryId && "border-primary/80",
           )}
         >
-          {item.name}
+          Newest
         </button>
-      ))}
+        {data.map((item) => (
+          <button
+            onClick={() => onClick(item.id)}
+            key={item.id}
+            className={cn(
+              "flex items-center rounded-md border bg-card px-2 py-2 text-center text-xs transition hover:opacity-75 md:px-4 md:py-3 md:text-sm",
+              item.id === categoryId && "border-primary/80",
+            )}
+          >
+            {item.name}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

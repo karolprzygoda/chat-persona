@@ -31,12 +31,12 @@ const RootLayout = async ({
         style={{
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error
-          "--sidebar-width": "15rem",
+          "--sidebar-width": "13rem",
           "--sidebar-width-icon": "4rem",
         }}
       >
         <AppSidebar />
-        <SidebarInset>
+        <SidebarInset className={"h-screen overflow-x-auto"}>
           <Header />
           <main className={"h-full"}>{children}</main>
         </SidebarInset>

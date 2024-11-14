@@ -51,11 +51,23 @@ export const createPersonaAction = async (formData: TCreatePersonaSchema) => {
 
     const fileName = `${Date.now()}_${user.id}_${avatar.file?.[0].name}`;
 
-    const { data, error } = await supabase.storage
+    const { data, error: uploadError } = await supabase.storage
       .from("personas-avatars")
-      .upload(fileName, avatar.file!);
+      .upload(fileName, avatar.file?.[0]);
 
-    if (error || !data) {
+    if (uploadError || !data) {
+      return {
+        title: "Error",
+        message: "Something went wrong",
+        variant: "destructive",
+      } as StateType;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from("personas-avatars")
+      .getPublicUrl(`${data.path}`);
+
+    if (!publicUrlData) {
       return {
         title: "Error",
         message: "Something went wrong",
@@ -68,7 +80,7 @@ export const createPersonaAction = async (formData: TCreatePersonaSchema) => {
         categoryId,
         userId: user.id,
         userName: user.user_metadata.name,
-        src: data.fullPath,
+        src: publicUrlData.publicUrl,
         name,
         description,
         instructions,

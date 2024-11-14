@@ -71,6 +71,11 @@ const SidebarDropdown = () => {
         className="w-[--radix-popper-anchor-width]"
       >
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuLabel
+          className={"truncate text-xs font-light text-muted-foreground"}
+        >
+          {user.email}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>

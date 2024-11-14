@@ -17,7 +17,7 @@ const Header = () => {
   const segments = pathname.split("/").filter(Boolean);
 
   return (
-    <header className="sticky top-0 flex shrink-0 items-center justify-between border-b bg-background p-4 py-5 md:gap-2">
+    <header className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b bg-background p-4 py-5 md:gap-2">
       <Breadcrumb className={"hidden md:block"}>
         <BreadcrumbList>
           <BreadcrumbItem className="hidden md:block">
