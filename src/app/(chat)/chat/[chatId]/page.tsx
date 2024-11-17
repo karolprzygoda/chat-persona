@@ -1,7 +1,7 @@
 import prismadb from "@/lib/prismadb";
 import { createClient } from "@/lib/supabase/supabaseServer";
 import { redirect } from "next/navigation";
-import ChatClient from "@/components/chat-client";
+import ChatClient from "@/components/chat/chat-client";
 
 type ChatIdPageProps = {
   params: Promise<{

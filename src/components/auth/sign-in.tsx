@@ -36,36 +36,36 @@ export function SignIn() {
   });
 
   const onSubmit = async (data: TAuthSchema) => {
-    const { title, message, variant } = await login(data);
+    const { title, description, variant } = await login(data);
 
-    if (title || message || variant) {
+    if (title || description || variant) {
       toast({
         title,
-        description: message,
+        description,
         variant,
       });
     }
   };
 
   async function signInWithGithub() {
-    const { title, message, variant } = await loginWithGitHub();
+    const { title, description, variant } = await loginWithGitHub();
 
-    if (title || message || variant) {
+    if (title || description || variant) {
       toast({
         title,
-        description: message,
+        description,
         variant,
       });
     }
   }
 
   async function signInWithGoogle() {
-    const { title, message, variant } = await loginWithGoogle();
+    const { title, description, variant } = await loginWithGoogle();
 
-    if (title || message || variant) {
+    if (title || description || variant) {
       toast({
         title,
-        description: message,
+        description,
         variant,
       });
     }

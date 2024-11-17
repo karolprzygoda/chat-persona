@@ -44,12 +44,12 @@ const ImageUpload = ({ value, onChange, disabled }: ImageUploadProps) => {
   };
 
   return (
-    <div className="relative flex w-full items-center justify-center">
+    <div className="relative flex w-full justify-center">
       {value.file && value.path ? (
-        <div className="relative aspect-square max-h-[520px]">
+        <div className="relative aspect-square w-full max-w-[400px]">
           <Image
-            width={512}
-            height={512}
+            fill
+            sizes={"400px"}
             alt="Preview"
             src={value.path}
             className="rounded-lg object-cover"
@@ -68,7 +68,7 @@ const ImageUpload = ({ value, onChange, disabled }: ImageUploadProps) => {
       ) : (
         <label
           htmlFor="dropzone-file"
-          className="flex aspect-square max-h-[520px] w-full max-w-[520px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed transition hover:border-primary/70"
+          className="flex aspect-square w-full max-w-[400px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed transition hover:border-primary/70"
         >
           <div className="flex flex-col items-center justify-center pb-6 pt-5">
             <UploadCloud className="mb-3 h-10 w-10 text-gray-400" />

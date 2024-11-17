@@ -1,7 +1,5 @@
-import SearchInput from "@/components/search-input";
-import Categories from "@/components/categories";
 import prismadb from "@/lib/prismadb";
-import Personas from "@/components/personas";
+import PersonasList from "@/components/persona/personas-list";
 
 type HomePageProps = {
   searchParams: Promise<{
@@ -12,12 +10,12 @@ type HomePageProps = {
 
 const HomePage = async ({ searchParams }: HomePageProps) => {
   const { categoryId, name } = await searchParams;
-  const categories = await prismadb.category.findMany();
+
   const data = await prismadb.persona.findMany({
     where: {
       categoryId: categoryId,
       name: {
-        search: name,
+        search: name?.split(" ").join(" & "),
       },
     },
     orderBy: {
@@ -39,9 +37,7 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 
   return (
     <div className={"relative h-full space-y-2 p-4"}>
-      <SearchInput />
-      <Categories data={categories} />
-      <Personas data={data} />
+      <PersonasList data={data} />
     </div>
   );
 };

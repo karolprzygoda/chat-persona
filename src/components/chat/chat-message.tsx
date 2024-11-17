@@ -3,7 +3,7 @@
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
-import BotAvatar from "@/components/bot-avatar";
+import BotAvatar from "@/components/chat/bot-avatar";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import { BeatLoader } from "react-spinners";

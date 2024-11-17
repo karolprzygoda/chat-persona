@@ -25,7 +25,7 @@ const Modal = ({ children }: { children: ReactNode }) => {
     <AlertDialog defaultOpen={true} open={true} onOpenChange={handleOpenChange}>
       <AlertDialogContent
         className={
-          "h-screen min-w-full overflow-auto border-0 md:h-auto md:min-w-0 md:max-w-lg md:border"
+          "h-screen max-h-screen overflow-auto border-0 sm:h-auto sm:max-w-lg md:min-w-0 md:border"
         }
       >
         <AlertDialogCancel className="absolute right-4 top-4 h-auto rounded-sm border-0 bg-transparent p-0 opacity-70 shadow-none ring-offset-card transition-opacity hover:bg-transparent hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">

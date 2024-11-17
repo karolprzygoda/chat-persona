@@ -23,19 +23,18 @@ import {
   Moon,
   Sun,
   User as UserIcon,
-  User2,
 } from "lucide-react";
 import * as React from "react";
-import { useSidebarTriggerContext } from "@/components/sidebar-trigger";
+import { useSidebarTriggerContext } from "@/components/sidebar/sidebar-trigger";
 import { useTheme } from "next-themes";
 import { createClient } from "@/lib/supabase/supabaseClient";
 import { useRouter } from "next/navigation";
-import { useUserContext } from "@/components/user-provider";
+import useUser from "@/hooks/useUser";
 
 const SidebarDropdown = () => {
   const { setTheme, theme } = useTheme();
   const { setIsDropdownOpen, setOpen } = useSidebarTriggerContext();
-  const user = useUserContext();
+  const user = useUser();
   const router = useRouter();
 
   const handleDropdownChange = (isOpen: boolean) => {
@@ -61,8 +60,8 @@ const SidebarDropdown = () => {
     <DropdownMenu onOpenChange={handleDropdownChange}>
       <DropdownMenuTrigger asChild>
         <SidebarMenuButton>
-          <User2 style={{ width: "20px", height: "20px" }} />{" "}
-          <span className={"truncate"}>{user.email}</span>
+          <UserIcon style={{ width: "20px", height: "20px" }} />{" "}
+          <span className={"truncate"}>{user?.email}</span>
           <ChevronUp className="ml-auto" />
         </SidebarMenuButton>
       </DropdownMenuTrigger>
@@ -74,7 +73,7 @@ const SidebarDropdown = () => {
         <DropdownMenuLabel
           className={"truncate text-xs font-light text-muted-foreground"}
         >
-          {user.email}
+          {user?.email}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>

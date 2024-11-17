@@ -12,11 +12,11 @@ import { revalidatePath } from "next/cache";
 
 export type StateType = {
   title: string;
-  message: string;
+  description: string;
   variant: "default" | "destructive";
 };
 
-export const createPersonaAction = async (formData: TCreatePersonaSchema) => {
+export async function createPersonaAction(formData: TCreatePersonaSchema) {
   try {
     const supabase = await createClient();
     const {
@@ -27,7 +27,7 @@ export const createPersonaAction = async (formData: TCreatePersonaSchema) => {
     if (!user || authError) {
       return {
         title: "Error",
-        message: "Unauthorized",
+        description: "Unauthorized",
         variant: "destructive",
       } as StateType;
     }
@@ -37,7 +37,7 @@ export const createPersonaAction = async (formData: TCreatePersonaSchema) => {
     if (!validatedPersona.success) {
       return {
         title: "Error",
-        message: "Invalid form data",
+        description: "Invalid form data",
         variant: "destructive",
       } as StateType;
     }
@@ -58,7 +58,7 @@ export const createPersonaAction = async (formData: TCreatePersonaSchema) => {
     if (uploadError || !data) {
       return {
         title: "Error",
-        message: "Something went wrong",
+        description: "Something went wrong",
         variant: "destructive",
       } as StateType;
     }
@@ -70,7 +70,7 @@ export const createPersonaAction = async (formData: TCreatePersonaSchema) => {
     if (!publicUrlData) {
       return {
         title: "Error",
-        message: "Something went wrong",
+        description: "Something went wrong",
         variant: "destructive",
       } as StateType;
     }
@@ -92,18 +92,18 @@ export const createPersonaAction = async (formData: TCreatePersonaSchema) => {
 
     return {
       title: "Success",
-      message: "Correctly added new Persona",
+      description: "Correctly added new Persona",
       variant: "default",
     } as StateType;
   } catch (error) {
     console.log(error);
     return {
       title: "Error",
-      message: "Something went wrong",
+      description: "Something went wrong",
       variant: "destructive",
     } as StateType;
   }
-};
+}
 
 export async function login(formData: TAuthSchema) {
   const supabase = await createClient();
@@ -118,7 +118,7 @@ export async function login(formData: TAuthSchema) {
   if (error) {
     return {
       title: "Error",
-      message: error.message,
+      description: error.message,
       variant: "destructive",
     } as StateType;
   }
@@ -140,7 +140,7 @@ export async function signup(formData: TAuthSchema) {
   if (error) {
     return {
       title: "Error",
-      message: error.message,
+      description: error.message,
       variant: "destructive",
     } as StateType;
   }
@@ -163,7 +163,7 @@ export async function loginWithGitHub() {
   if (error) {
     return {
       title: "Error",
-      message: error.message,
+      description: error.message,
       variant: "destructive",
     } as StateType;
   } else {
@@ -189,10 +189,49 @@ export async function loginWithGoogle() {
   if (error) {
     return {
       title: "Error",
-      message: error.message,
+      description: error.message,
       variant: "destructive",
     } as StateType;
   } else {
     return redirect(data.url);
+  }
+}
+
+export async function deletePersonaAction(id: string) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (!user || authError) {
+      return {
+        title: "Error",
+        description: "Unauthorized",
+        variant: "destructive",
+      } as StateType;
+    }
+
+    const persona = await prismadb.persona.delete({
+      where: {
+        userId: user.id,
+        id,
+      },
+    });
+
+    revalidatePath("/");
+
+    return {
+      title: "Success",
+      description: `Correctly deleted Persona: ${persona.name}`,
+    } as StateType;
+  } catch (error) {
+    console.log(error);
+    return {
+      title: "Error",
+      description: "Something went wrong.",
+      variant: "destructive",
+    } as StateType;
   }
 }

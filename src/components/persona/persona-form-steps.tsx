@@ -8,7 +8,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import ImageUpload from "@/components/ui/image-upload";
+import ImageUpload from "@/components/image-upload";
 
 import { Category } from "@prisma/client";
 import { Input } from "@/components/ui/input";
@@ -30,10 +30,13 @@ export const AvatarStep = () => {
       <FormField
         name={"avatar"}
         render={({ field }) => (
-          <FormItem className={"flex flex-col items-center justify-center"}>
+          <FormItem className={"flex flex-col items-center"}>
             <FormControl>
               <ImageUpload value={field.value} onChange={field.onChange} />
             </FormControl>
+            <p className={"ml-5 mt-2 self-start text-xs text-muted-foreground"}>
+              This image will be displayed in Persona Card
+            </p>
             <FormMessage />
           </FormItem>
         )}
@@ -47,7 +50,7 @@ export const BasicInfoStep = ({ categories }: { categories: Category[] }) => {
 
   return (
     <Form {...form}>
-      <div className={"flex flex-col gap-8 md:h-[430px]"}>
+      <div className={"flex flex-col gap-8 md:h-[424px]"}>
         <FormField
           name={"basicInfo.name"}
           control={form.control}
@@ -127,7 +130,7 @@ export const InstructionsStep = () => {
         render={({ field }) => (
           <FormItem
             className={
-              "col-span-2 flex h-96 flex-col md:col-span-1 md:h-[430px]"
+              "col-span-2 flex h-96 flex-col md:col-span-1 md:h-[424px]"
             }
           >
             <FormLabel>Example Conversation</FormLabel>
@@ -158,7 +161,7 @@ export const SeedStep = ({ isSubmitting }: { isSubmitting: boolean }) => {
         render={({ field }) => (
           <FormItem
             className={
-              "col-span-2 flex h-96 flex-col md:col-span-1 md:h-[430px]"
+              "col-span-2 flex h-96 flex-col md:col-span-1 md:h-[424px]"
             }
           >
             <FormLabel>Example Conversation</FormLabel>

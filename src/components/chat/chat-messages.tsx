@@ -1,7 +1,7 @@
 "use client";
 
 import { Persona } from "@prisma/client";
-import { ChatMessage, ChatMessageProps } from "@/components/chat-message";
+import { ChatMessage, ChatMessageProps } from "@/components/chat/chat-message";
 import { ElementRef, useEffect, useRef, useState } from "react";
 
 type ChatMessagesProps = {

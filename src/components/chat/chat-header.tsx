@@ -2,24 +2,11 @@
 
 import { Message, Persona } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import {
-  ChevronLeft,
-  Edit,
-  MessageSquare,
-  MoreVertical,
-  Trash2,
-} from "lucide-react";
+import { ChevronLeft, MessageSquare, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
-import BotAvatar from "@/components/bot-avatar";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import BotAvatar from "@/components/chat/bot-avatar";
 import useUser from "@/hooks/useUser";
-import { useToast } from "@/hooks/use-toast";
+import ManagePersonaDropdown from "@/components/persona/manage-persona-dropdown";
 
 type ChatHeaderProps = {
   persona: Persona & {
@@ -32,21 +19,6 @@ type ChatHeaderProps = {
 
 const ChatHeader = ({ persona }: ChatHeaderProps) => {
   const router = useRouter();
-  const user = useUser();
-  const { toast } = useToast();
-
-  const onDelete = async () => {
-    try {
-      toast({
-        description: "Success.",
-      });
-    } catch (error) {
-      toast({
-        description: "Something went wrong.",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <header
@@ -70,25 +42,12 @@ const ChatHeader = ({ persona }: ChatHeaderProps) => {
           </p>
         </div>
       </div>
-      {user?.id === persona.userId && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant={"secondary"} size={"icon"}>
-              <MoreVertical />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align={"end"}>
-            <DropdownMenuItem>
-              <Edit className={"mr-2 h-4 w-4"} />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onDelete}>
-              <Trash2 className={"mr-2 h-4 w-4"} />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+
+      <ManagePersonaDropdown
+        persona={persona}
+        className={"rounded-xl bg-secondary p-2"}
+        triggerIcon={<MoreVertical className={"h-5 w-5"} />}
+      />
     </header>
   );
 };

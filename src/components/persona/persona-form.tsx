@@ -17,10 +17,11 @@ import {
   BasicInfoStep,
   InstructionsStep,
   SeedStep,
-} from "@/components/persona-form-steps";
+} from "@/components/persona/persona-form-steps";
 import { createPersonaAction } from "@/actions/actions";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const titles = [
   "Add an avatar to your persona",
@@ -49,20 +50,23 @@ const PersonaForm = ({ categories }: { categories: Category[] }) => {
     mode: "onBlur",
   });
 
+  const router = useRouter();
+
   const isSubmitting = form.formState.isSubmitting;
 
   const onSubmit = async (data: TCreatePersonaSchema) => {
-    const { title, message, variant } = await createPersonaAction(data);
+    const { title, description, variant } = await createPersonaAction(data);
     toast({
       title,
-      description: message,
+      description,
       variant,
     });
+    router.back();
   };
 
   return (
     <MultiStepForm
-      className={"flex flex-col justify-around p-4 md:gap-10"}
+      className={"flex flex-col justify-around p-4"}
       schema={createPersonaSchema}
       form={form}
       onSubmit={onSubmit}
@@ -95,7 +99,7 @@ const PersonaForm = ({ categories }: { categories: Category[] }) => {
       <MultiStepFormStep name="seed">
         <SeedStep isSubmitting={isSubmitting} />
       </MultiStepFormStep>
-      <MultiStepFormFooter className={"flex w-full justify-end space-x-4"}>
+      <MultiStepFormFooter className={"mt-6 flex w-full justify-end space-x-4"}>
         <MultiStepFormContextProvider>
           {({ isFirstStep, isLastStep, isStepValid, nextStep, prevStep }) => (
             <>
@@ -109,7 +113,7 @@ const PersonaForm = ({ categories }: { categories: Category[] }) => {
                   disabled={!isStepValid() || isSubmitting}
                   type={"submit"}
                 >
-                  Create!
+                  {isSubmitting ? "Creating..." : "Create!"}
                 </Button>
               ) : (
                 <Button

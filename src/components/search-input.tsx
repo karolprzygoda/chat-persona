@@ -44,6 +44,7 @@ const SearchInput = () => {
         className={"absolute left-4 top-3 h-4 w-4 text-muted-foreground"}
       />
       <Input
+        name={"search input"}
         onChange={onChange}
         value={value}
         placeholder={"Search"}

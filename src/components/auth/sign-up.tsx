@@ -36,12 +36,12 @@ export function SignUp() {
   });
 
   const onSubmit = async (data: TAuthSchema) => {
-    const { title, message, variant } = await signup(data);
+    const { title, description, variant } = await signup(data);
 
-    if (title || message || variant) {
+    if (title || description || variant) {
       toast({
         title,
-        description: message,
+        description,
         variant,
       });
     }
@@ -125,7 +125,7 @@ export function SignUp() {
             </Button>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <Link href="/sign-in" className="underline">
+              <Link href="/src/components/auth/sign-in" className="underline">
                 Sign In
               </Link>
             </div>
