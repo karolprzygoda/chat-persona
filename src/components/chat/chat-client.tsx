@@ -3,7 +3,7 @@
 import { Message, Persona } from "@prisma/client";
 import ChatHeader from "@/components/chat/chat-header";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useCompletion } from "@ai-sdk/react";
 import ChatForm from "@/components/chat/chat-form";
 import ChatMessages from "@/components/chat/chat-messages";
@@ -24,9 +24,9 @@ const ChatClient = ({ persona }: ChatClientProps) => {
     persona.messages,
   );
 
-  const { input, isLoading, handleInputChange, handleSubmit, setInput } =
+  const { input, isLoading, handleInputChange, handleSubmit, setInput, error } =
     useCompletion({
-      api: `api/chat/${persona.id}`,
+      api: `/api/chat/${persona.id}`,
       onFinish(prompt, completion) {
         const systemMessage: ChatMessageProps = {
           role: "system",
@@ -36,9 +36,18 @@ const ChatClient = ({ persona }: ChatClientProps) => {
         setMessages((current) => [...current, systemMessage]);
         setInput("");
 
+        console.log("XDDDDDDD");
+
         router.refresh();
       },
+      streamProtocol: "text",
     });
+
+  useEffect(() => {
+    if (error) {
+      console.log(error.message);
+    }
+  }, [error]);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     const userMessage: ChatMessageProps = {
@@ -53,7 +62,6 @@ const ChatClient = ({ persona }: ChatClientProps) => {
   return (
     <div className={"flex h-screen flex-col space-y-2 p-4"}>
       <ChatHeader persona={persona} />
-      {/*<div>Messages TODO</div>*/}
       <ChatMessages
         persona={persona}
         isLoading={isLoading}

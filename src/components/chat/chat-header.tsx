@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, MessageSquare, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 import BotAvatar from "@/components/chat/bot-avatar";
-import useUser from "@/hooks/useUser";
 import ManagePersonaDropdown from "@/components/persona/manage-persona-dropdown";
 
 type ChatHeaderProps = {

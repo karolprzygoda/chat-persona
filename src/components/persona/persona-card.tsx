@@ -67,9 +67,9 @@ const PersonaCard = ({ item }: PersonaCardProps) => {
                 </Badge>
               </div>
             </div>
-            <p className={"mt-4 line-clamp-3 overflow-hidden text-sm"}>
-              {item.seed}
-            </p>
+            {/*<p className={"mt-4 line-clamp-3 overflow-hidden text-sm"}>*/}
+            {/*  {item.seed}*/}
+            {/*</p>*/}
           </div>
           <CardFooter
             className={
