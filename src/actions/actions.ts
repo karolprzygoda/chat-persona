@@ -1,6 +1,7 @@
 "use server";
 
 import {
+  authSchema,
   createPersonaSchema,
   TAuthSchema,
   TCreatePersonaSchema,
@@ -105,29 +106,31 @@ export async function createPersonaAction(formData: TCreatePersonaSchema) {
   }
 }
 
-export async function login(formData: TAuthSchema) {
+export async function signIn(formData: TAuthSchema) {
   const supabase = await createClient();
 
   const data = {
     email: formData.email,
     password: formData.password,
   };
+
+  const validatedAuthData = authSchema.safeParse(data);
+
+  if (!validatedAuthData.success) {
+    return validatedAuthData.error.errors[0];
+  }
 
   const { error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {
-    return {
-      title: "Error",
-      description: error.message,
-      variant: "destructive",
-    } as StateType;
+    return error;
   }
 
   revalidatePath("/", "layout");
   redirect("/");
 }
 
-export async function signup(formData: TAuthSchema) {
+export async function signUp(formData: TAuthSchema) {
   const supabase = await createClient();
 
   const data = {
@@ -135,48 +138,46 @@ export async function signup(formData: TAuthSchema) {
     password: formData.password,
   };
 
+  const validatedAuthData = authSchema.safeParse(data);
+
+  if (!validatedAuthData.success) {
+    return validatedAuthData.error.errors[0];
+  }
+
   const { error } = await supabase.auth.signUp(data);
 
   if (error) {
-    return {
-      title: "Error",
-      description: error.message,
-      variant: "destructive",
-    } as StateType;
+    return error;
   }
 
   revalidatePath("/", "layout");
   redirect("/");
 }
 
-export async function loginWithGitHub() {
+export async function signInWithGithub() {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "github",
     options: {
-      redirectTo: "http://localhost:3000",
+      redirectTo: "http://localhost:3000/auth/callback",
     },
   });
 
-  console.log(data, error);
-
   if (error) {
-    return {
-      title: "Error",
-      description: error.message,
-      variant: "destructive",
-    } as StateType;
-  } else {
-    return redirect(data.url);
+    return error;
+  }
+
+  if (data.url) {
+    redirect(data.url);
   }
 }
 
-export async function loginWithGoogle() {
+export async function signInWithGoogle() {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: "http://localhost:3000",
+      redirectTo: "http://localhost:3000/auth/callback",
       queryParams: {
         access_type: "offline",
         prompt: "consent",
@@ -184,16 +185,11 @@ export async function loginWithGoogle() {
     },
   });
 
-  console.log(data, error);
-
   if (error) {
-    return {
-      title: "Error",
-      description: error.message,
-      variant: "destructive",
-    } as StateType;
-  } else {
-    return redirect(data.url);
+    return error;
+  }
+  if (data.url) {
+    redirect(data.url);
   }
 }
 

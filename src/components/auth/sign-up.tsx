@@ -23,10 +23,10 @@ import { useForm } from "react-hook-form";
 import { authSchema, TAuthSchema } from "@/schemas/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { signup } from "@/actions/actions";
+import { signInWithGithub, signInWithGoogle, signUp } from "@/actions/actions";
 import { toast } from "@/hooks/use-toast";
 
-export function SignUp() {
+const SignUp = () => {
   const form = useForm<TAuthSchema>({
     resolver: zodResolver(authSchema),
     defaultValues: {
@@ -36,34 +36,68 @@ export function SignUp() {
   });
 
   const onSubmit = async (data: TAuthSchema) => {
-    const { title, description, variant } = await signup(data);
-
-    if (title || description || variant) {
+    const error = await signUp(data);
+    if (error) {
       toast({
-        title,
-        description,
-        variant,
+        title: "Authentication Error",
+        description: error.message,
+        variant: "destructive",
       });
     }
   };
+
+  const onGithubSignIn = async () => {
+    const error = await signInWithGithub();
+    if (error) {
+      toast({
+        title: "Authentication Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  async function onGoogleSignIn() {
+    const error = await signInWithGoogle();
+    if (error) {
+      toast({
+        title: "Authentication Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  }
 
   const isLoading = form.formState.isSubmitting;
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Card className={"w-96"}>
+      <form
+        className={"w-full max-w-96"}
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
+        <Card className={"w-full"}>
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl">Create your account</CardTitle>
             <CardDescription>Enter your email below to sign up</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid grid-cols-2 gap-6">
-              <Button type={"button"} disabled={isLoading} variant="outline">
+              <Button
+                onClick={onGithubSignIn}
+                type={"button"}
+                disabled={isLoading}
+                variant="outline"
+              >
                 <Icons.gitHub className="mr-2 h-4 w-4" />
                 Github
               </Button>
-              <Button type={"button"} disabled={isLoading} variant="outline">
+              <Button
+                onClick={onGoogleSignIn}
+                type={"button"}
+                disabled={isLoading}
+                variant="outline"
+              >
                 <Icons.google className="mr-2 h-4 w-4" />
                 Google
               </Button>
@@ -125,7 +159,7 @@ export function SignUp() {
             </Button>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <Link href="/src/components/auth/sign-in" className="underline">
+              <Link href="/sign-in" className="underline">
                 Sign In
               </Link>
             </div>
@@ -134,4 +168,6 @@ export function SignUp() {
       </form>
     </Form>
   );
-}
+};
+
+export default SignUp;
