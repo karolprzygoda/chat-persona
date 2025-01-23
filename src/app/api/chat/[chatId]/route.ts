@@ -1,18 +1,20 @@
-import { StreamingTextResponse, LangChainStream } from "ai";
-import { CallbackManager } from "@langchain/core/callbacks/manager";
 import { NextResponse } from "next/server";
-import { MemoryManager } from "@/lib/memory";
-import { rateLimit } from "@/lib/rate-limit";
-import { Replicate } from "@langchain/community/llms/replicate";
+import { openai } from "@ai-sdk/openai";
+import { appendResponseMessages, createIdGenerator, streamText } from "ai";
+import { createClient } from "@/lib/supabase/server";
 import prismadb from "@/lib/prismadb";
-import { createClient } from "@/lib/supabase/supabaseServer";
+import { notFound } from "next/navigation";
+import { addMessage } from "@/actions/tools-actions";
+import { toolSet } from "@/lib/ai/tools";
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ chatId: string }> },
 ) {
   try {
-    const { prompt } = await request.json();
+    const { chatId } = await params;
+    const { messages } = await request.json();
+
     const supabase = await createClient();
     const {
       data: { user },
@@ -23,125 +25,51 @@ export async function POST(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const identifier = request.url + "-" + user.id;
-    const { success } = await rateLimit(identifier);
-
-    if (!success) {
-      return new NextResponse("Rate limit exceeded", { status: 429 });
-    }
-
-    const persona = await prismadb.persona.update({
+    const persona = await prismadb.persona.findFirst({
       where: {
-        id: (await params).chatId,
-      },
-      data: {
-        messages: {
-          create: {
-            content: prompt,
-            role: "user",
-            userId: user.id,
+        chat: {
+          some: {
+            id: chatId,
           },
         },
       },
     });
 
     if (!persona) {
-      return new NextResponse("Persona not found", { status: 404 });
+      notFound();
     }
 
-    const name = persona.id;
-    const persona_file_name = name + ".txt";
-
-    const personaKey = {
-      personaName: name,
-      userId: user.id,
-      modelName: "llama2-13b",
-    };
-
-    const memoryManager = await MemoryManager.getInstance();
-
-    const records = await memoryManager.readLatestHistory(personaKey);
-
-    if (records.length === 0) {
-      await memoryManager.seedChatHistory(persona.seed, "\n\n", personaKey);
-    }
-
-    await memoryManager.writeToHistory("User: " + prompt + "\n", personaKey);
-
-    const recentChatHistory = await memoryManager.readLatestHistory(personaKey);
-
-    const similarDocs = await memoryManager.vectorSearch(
-      recentChatHistory,
-      persona_file_name,
-    );
-
-    let relevantHistory = "";
-
-    if (!!similarDocs && similarDocs.length !== 0) {
-      relevantHistory = similarDocs.map((doc) => doc.pageContent).join("\n");
-    }
-
-    const { handlers } = LangChainStream();
-
-    const model = new Replicate({
-      model:
-        "a16z-infra/llama-2-13b-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5",
-      input: {
-        max_length: 2048,
+    const result = streamText({
+      model: openai("gpt-4o"),
+      system: `You are a helpful assistant. Play the role of ${persona.name}. 
+              - Always check your knowledge base and tools for relevant information before answering any questions.
+              - If no relevant information is found, respond: "Sorry, I don't know."
+              - Provide answers in the same language as the question.
+              - Do not include any prefixes indicating who is speaking. 
+              - Follow these guidelines carefully to ensure clarity and consistency in your responses.:
+               ${persona.instructions}
+               - Bellow is sample conversation:
+               ${persona.seed}
+             `,
+      messages,
+      maxSteps: 5,
+      async onFinish({ response }) {
+        await addMessage(
+          chatId,
+          appendResponseMessages({
+            messages,
+            responseMessages: response.messages,
+          }),
+        );
       },
-      apiKey: process.env.REPLICATE_API_TOKEN,
-      callbackManager: CallbackManager.fromHandlers(handlers),
+      experimental_generateMessageId: createIdGenerator({
+        prefix: "msgs",
+        size: 16,
+      }),
+      tools: toolSet,
     });
 
-    model.verbose = true;
-
-    const resp = String(
-      await model
-        .call(
-          `ONLY generate plain sentences without prefix of who is  speaking. DO NOT use ${name}: prefix. 
-          DO NOT USE double enter space in response! Below are some additional instructions:
-        ${persona.instructions}
-        
-        Below are relevant details about ${name}'s past and the conversation you are in.
-        ${relevantHistory}
-        
-        ${recentChatHistory}\n${name}
-        `,
-        )
-        .catch(console.error),
-    );
-
-    const cleaned = resp.replaceAll(",", "");
-    const chunks = cleaned.split("\n");
-    const response = chunks[0];
-
-    await memoryManager.writeToHistory("" + response.trim(), personaKey);
-    var Readable = require("stream").Readable;
-
-    let s = new Readable();
-    s.push(resp);
-    s.push(null);
-
-    if (resp !== undefined && resp.length > 1) {
-      memoryManager.writeToHistory("" + response.trim(), personaKey);
-
-      await prismadb.persona.update({
-        where: {
-          id: (await params).chatId,
-        },
-        data: {
-          messages: {
-            create: {
-              content: response.trim(),
-              role: "system",
-              userId: user.id,
-            },
-          },
-        },
-      });
-    }
-
-    return new StreamingTextResponse(s);
+    return result.toDataStreamResponse();
   } catch (error) {
     console.log(error);
     return new NextResponse("Internal Error", { status: 500 });

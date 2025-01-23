@@ -1,5 +1,5 @@
 import prismadb from "@/lib/prismadb";
-import { createClient } from "@/lib/supabase/supabaseServer";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import ChatClient from "@/components/chat/chat-client";
 
@@ -11,6 +11,7 @@ type ChatIdPageProps = {
 
 const ChatIdPage = async ({ params }: ChatIdPageProps) => {
   const supabase = await createClient();
+  const { chatId } = await params;
   const {
     data: { user },
     error: authError,
@@ -20,17 +21,18 @@ const ChatIdPage = async ({ params }: ChatIdPageProps) => {
     redirect("/signIn");
   }
 
-  const persona = await prismadb.persona.findUnique({
+  const chat = await prismadb.chat.findUnique({
     where: {
-      id: (await params).chatId,
+      id: chatId,
     },
     include: {
+      persona: true,
       messages: {
         orderBy: {
           createdAt: "asc",
         },
         where: {
-          userId: user.id,
+          chatId: chatId,
         },
       },
       _count: {
@@ -41,11 +43,15 @@ const ChatIdPage = async ({ params }: ChatIdPageProps) => {
     },
   });
 
-  if (!persona) {
+  if (!chat) {
     redirect("/");
   }
 
-  return <ChatClient persona={persona} />;
+  return (
+    <div className={"relative h-screen w-screen overflow-hidden"}>
+      <ChatClient chat={chat} />
+    </div>
+  );
 };
 
 export default ChatIdPage;

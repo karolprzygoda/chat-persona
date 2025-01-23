@@ -24,7 +24,7 @@ import { authSchema, TAuthSchema } from "@/schemas/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { signInWithGithub, signInWithGoogle, signUp } from "@/actions/actions";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const SignUp = () => {
   const form = useForm<TAuthSchema>({
@@ -36,39 +36,27 @@ const SignUp = () => {
   });
 
   const onSubmit = async (data: TAuthSchema) => {
-    const error = await signUp(data);
+    const { error } = await signUp(data);
     if (error) {
-      toast({
-        title: "Authentication Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error);
     }
   };
 
   const onGithubSignIn = async () => {
     const error = await signInWithGithub();
     if (error) {
-      toast({
-        title: "Authentication Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.errorMessage);
     }
   };
 
   async function onGoogleSignIn() {
     const error = await signInWithGoogle();
     if (error) {
-      toast({
-        title: "Authentication Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.errorMessage);
     }
   }
 
-  const isLoading = form.formState.isSubmitting;
+  const isSubmitting = form.formState.isSubmitting;
 
   return (
     <Form {...form}>
@@ -86,7 +74,7 @@ const SignUp = () => {
               <Button
                 onClick={onGithubSignIn}
                 type={"button"}
-                disabled={isLoading}
+                disabled={isSubmitting}
                 variant="outline"
               >
                 <Icons.gitHub className="mr-2 h-4 w-4" />
@@ -95,7 +83,7 @@ const SignUp = () => {
               <Button
                 onClick={onGoogleSignIn}
                 type={"button"}
-                disabled={isLoading}
+                disabled={isSubmitting}
                 variant="outline"
               >
                 <Icons.google className="mr-2 h-4 w-4" />
@@ -120,7 +108,7 @@ const SignUp = () => {
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isLoading}
+                      disabled={isSubmitting}
                       type={"email"}
                       placeholder="example@gmail.com"
                       {...field}
@@ -138,7 +126,7 @@ const SignUp = () => {
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isLoading}
+                      disabled={isSubmitting}
                       type={"password"}
                       placeholder="****************"
                       {...field}
@@ -152,10 +140,10 @@ const SignUp = () => {
           <CardFooter className={"flex flex-col"}>
             <Button
               type={"submit"}
-              disabled={isLoading}
+              disabled={isSubmitting}
               className="w-full font-semibold"
             >
-              {isLoading ? "Authentication..." : "Sign Up"}
+              {isSubmitting ? "Authentication..." : "Sign Up"}
             </Button>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}

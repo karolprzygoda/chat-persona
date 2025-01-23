@@ -4,7 +4,6 @@ import PersonaCard from "@/components/persona/persona-card";
 
 type PersonasProps = {
   data: (Persona & {
-    _count: { messages: number };
     category: {
       name: string;
     };

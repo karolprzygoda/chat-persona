@@ -19,9 +19,9 @@ import {
   SeedStep,
 } from "@/components/persona/persona-form-steps";
 import { createPersonaAction } from "@/actions/actions";
-import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const titles = [
   "Add an avatar to your persona",
@@ -56,11 +56,7 @@ const PersonaForm = ({ categories }: { categories: Category[] }) => {
 
   const onSubmit = async (data: TCreatePersonaSchema) => {
     const { title, description, variant } = await createPersonaAction(data);
-    toast({
-      title,
-      description,
-      variant,
-    });
+    toast[variant](title, { description: description });
     router.back();
   };
 

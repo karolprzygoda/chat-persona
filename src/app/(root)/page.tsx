@@ -22,11 +22,6 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
       createdAt: "desc",
     },
     include: {
-      _count: {
-        select: {
-          messages: true,
-        },
-      },
       category: {
         select: {
           name: true,

@@ -133,15 +133,17 @@ export const InstructionsStep = () => {
               "col-span-2 flex h-96 flex-col md:col-span-1 md:h-[424px]"
             }
           >
-            <FormLabel>Example Conversation</FormLabel>
+            <FormLabel>Example Instructions</FormLabel>
             <FormControl>
               <Textarea
                 className={"flex-1 resize-none bg-background"}
-                placeholder={"example of your conversation"}
+                placeholder={"Basic knowledge of your chatbot"}
                 {...field}
               />
             </FormControl>
-            <FormDescription>Describe example conversation.</FormDescription>
+            <FormDescription>
+              Describe basic knowledge of your chatbot.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}

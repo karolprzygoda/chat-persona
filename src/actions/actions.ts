@@ -6,7 +6,7 @@ import {
   TAuthSchema,
   TCreatePersonaSchema,
 } from "@/schemas/schema";
-import { createClient } from "@/lib/supabase/supabaseServer";
+import { createClient } from "@/lib/supabase/server";
 import prismadb from "@/lib/prismadb";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -14,7 +14,7 @@ import { revalidatePath } from "next/cache";
 export type StateType = {
   title: string;
   description: string;
-  variant: "default" | "destructive";
+  variant: "success" | "error";
 };
 
 export async function createPersonaAction(formData: TCreatePersonaSchema) {
@@ -29,7 +29,7 @@ export async function createPersonaAction(formData: TCreatePersonaSchema) {
       return {
         title: "Error",
         description: "Unauthorized",
-        variant: "destructive",
+        variant: "error",
       } as StateType;
     }
 
@@ -39,7 +39,7 @@ export async function createPersonaAction(formData: TCreatePersonaSchema) {
       return {
         title: "Error",
         description: "Invalid form data",
-        variant: "destructive",
+        variant: "error",
       } as StateType;
     }
 
@@ -60,7 +60,7 @@ export async function createPersonaAction(formData: TCreatePersonaSchema) {
       return {
         title: "Error",
         description: "Something went wrong",
-        variant: "destructive",
+        variant: "error",
       } as StateType;
     }
 
@@ -72,15 +72,14 @@ export async function createPersonaAction(formData: TCreatePersonaSchema) {
       return {
         title: "Error",
         description: "Something went wrong",
-        variant: "destructive",
+        variant: "error",
       } as StateType;
     }
 
     await prismadb.persona.create({
       data: {
         categoryId,
-        userId: user.id,
-        userName: user.user_metadata.name,
+        authorId: user.id,
         src: publicUrlData.publicUrl,
         name,
         description,
@@ -94,14 +93,14 @@ export async function createPersonaAction(formData: TCreatePersonaSchema) {
     return {
       title: "Success",
       description: "Correctly added new Persona",
-      variant: "default",
+      variant: "success",
     } as StateType;
   } catch (error) {
     console.log(error);
     return {
       title: "Error",
       description: "Something went wrong",
-      variant: "destructive",
+      variant: "error",
     } as StateType;
   }
 }
@@ -117,13 +116,13 @@ export async function signIn(formData: TAuthSchema) {
   const validatedAuthData = authSchema.safeParse(data);
 
   if (!validatedAuthData.success) {
-    return validatedAuthData.error.errors[0];
+    return { error: validatedAuthData.error.errors[0].message };
   }
 
   const { error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {
-    return error;
+    return { error: error.message };
   }
 
   revalidatePath("/", "layout");
@@ -141,13 +140,13 @@ export async function signUp(formData: TAuthSchema) {
   const validatedAuthData = authSchema.safeParse(data);
 
   if (!validatedAuthData.success) {
-    return validatedAuthData.error.errors[0];
+    return { error: validatedAuthData.error.errors[0].message };
   }
 
   const { error } = await supabase.auth.signUp(data);
 
   if (error) {
-    return error;
+    return { error: error.message };
   }
 
   revalidatePath("/", "layout");
@@ -164,7 +163,7 @@ export async function signInWithGithub() {
   });
 
   if (error) {
-    return error;
+    return { errorMessage: error.message };
   }
 
   if (data.url) {
@@ -186,7 +185,7 @@ export async function signInWithGoogle() {
   });
 
   if (error) {
-    return error;
+    return { errorMessage: error.message };
   }
   if (data.url) {
     redirect(data.url);
@@ -205,13 +204,13 @@ export async function deletePersonaAction(id: string) {
       return {
         title: "Error",
         description: "Unauthorized",
-        variant: "destructive",
+        variant: "error",
       } as StateType;
     }
 
     const persona = await prismadb.persona.delete({
       where: {
-        userId: user.id,
+        authorId: user.id,
         id,
       },
     });
@@ -221,13 +220,14 @@ export async function deletePersonaAction(id: string) {
     return {
       title: "Success",
       description: `Correctly deleted Persona: ${persona.name}`,
+      variant: "success",
     } as StateType;
   } catch (error) {
     console.log(error);
     return {
       title: "Error",
       description: "Something went wrong.",
-      variant: "destructive",
+      variant: "error",
     } as StateType;
   }
 }

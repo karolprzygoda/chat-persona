@@ -1,77 +1,106 @@
 "use client";
 
-import { Message, Persona } from "@prisma/client";
 import ChatHeader from "@/components/chat/chat-header";
-import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
-import { useCompletion } from "@ai-sdk/react";
+import { useEffect, useRef, useState } from "react";
 import ChatForm from "@/components/chat/chat-form";
-import ChatMessages from "@/components/chat/chat-messages";
-import { ChatMessageProps } from "@/components/chat/chat-message";
+import { useChat } from "@ai-sdk/react";
+import { createIdGenerator, Message } from "ai";
+import { ChatType } from "@/lib/types";
+import { toast } from "sonner";
+import ChatPreview from "@/components/chat/chat-preview";
 
 type ChatClientProps = {
-  persona: Persona & {
-    messages: Message[];
-    _count: {
-      messages: number;
-    };
-  };
+  chat: ChatType;
 };
 
-const ChatClient = ({ persona }: ChatClientProps) => {
-  const router = useRouter();
-  const [messages, setMessages] = useState<ChatMessageProps[]>(
-    persona.messages,
-  );
+const ChatClient = ({ chat }: ChatClientProps) => {
+  const initialMessage = "Hello how can i assist you today?";
+  const [streamedText, setStreamedText] = useState("");
+  const [isStreaming, setIsStreaming] = useState(true);
 
-  const { input, isLoading, handleInputChange, handleSubmit, setInput, error } =
-    useCompletion({
-      api: `/api/chat/${persona.id}`,
-      onFinish(prompt, completion) {
-        const systemMessage: ChatMessageProps = {
-          role: "system",
-          content: completion,
-        };
-
-        setMessages((current) => [...current, systemMessage]);
-        setInput("");
-
-        console.log("XDDDDDDD");
-
-        router.refresh();
+  const {
+    input,
+    isLoading,
+    stop,
+    handleInputChange,
+    handleSubmit,
+    error,
+    messages,
+    addToolResult,
+  } = useChat({
+    api: `/api/chat/${chat.id}`,
+    initialMessages: (chat.messages as unknown as Message[]) ?? [
+      {
+        id: "initial message",
+        role: "assistant",
+        content: streamedText,
       },
-      streamProtocol: "text",
-    });
+    ],
+    sendExtraMessageFields: true,
+    experimental_throttle: 50,
+    generateId: createIdGenerator({
+      prefix: "msgc",
+      size: 16,
+    }),
+    async onToolCall({ toolCall }) {
+      if (toolCall.toolName === "getLocation") {
+        const cities = ["New York", "Los Angeles", "Chicago", "San Francisco"];
+        return cities[Math.floor(Math.random() * cities.length)];
+      }
+    },
+  });
 
   useEffect(() => {
+    console.log(error);
+
     if (error) {
-      console.log(error.message);
+      toast.error(error?.message);
     }
   }, [error]);
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    const userMessage: ChatMessageProps = {
-      role: "user",
-      content: input,
-    };
+  useEffect(() => {
+    let currentIndex = 0;
+    if (isStreaming) {
+      const interval = setInterval(() => {
+        if (currentIndex <= initialMessage.length) {
+          setStreamedText(initialMessage.slice(0, currentIndex));
+          currentIndex++;
+        } else {
+          setIsStreaming(false);
+          clearInterval(interval);
+        }
+      }, 25);
 
-    setMessages((current) => [...current, userMessage]);
-    handleSubmit(e);
-  };
+      return () => clearInterval(interval);
+    }
+  }, [isStreaming]);
+
+  const chatPreviewRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (chatPreviewRef.current) {
+      chatPreviewRef.current.scrollTop = chatPreviewRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   return (
-    <div className={"flex h-screen flex-col space-y-2 p-4"}>
-      <ChatHeader persona={persona} />
-      <ChatMessages
-        persona={persona}
+    <div
+      className={"absolute flex h-full w-full flex-col items-center gap-4 pb-4"}
+    >
+      <ChatHeader persona={chat.persona} messageCount={chat._count.messages} />
+      <ChatPreview
+        ref={chatPreviewRef}
         isLoading={isLoading}
+        persona={chat.persona}
+        numberOfMessages={chat._count.messages}
         messages={messages}
+        addToolResult={addToolResult}
       />
       <ChatForm
-        isLoading={isLoading}
         input={input}
-        handleInputChange={handleInputChange}
-        onSubmit={onSubmit}
+        onChange={handleInputChange}
+        onSubmit={handleSubmit}
+        onStop={stop}
       />
     </div>
   );

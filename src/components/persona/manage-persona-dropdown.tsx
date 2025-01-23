@@ -11,11 +11,11 @@ import {
 import { Trash2, UserPen } from "lucide-react";
 import Link from "next/link";
 import { ReactNode } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { deletePersonaAction } from "@/actions/actions";
 import useUser from "@/hooks/useUser";
 import { Persona } from "@prisma/client";
+import { toast } from "sonner";
 
 type ManagePersonaDropdownProps = {
   triggerIcon: ReactNode;
@@ -28,20 +28,14 @@ export const ManagePersonaDropdown = ({
   className,
   persona,
 }: ManagePersonaDropdownProps) => {
-  const { toast } = useToast();
   const user = useUser();
 
   const onDelete = async (id: string) => {
     const { title, description, variant } = await deletePersonaAction(id);
-
-    toast({
-      title,
-      description,
-      variant,
-    });
+    toast[variant](title, { description: description });
   };
 
-  if (!user || user.id !== persona.userId) {
+  if (!user || user.id !== persona.authorId) {
     return null;
   }
 

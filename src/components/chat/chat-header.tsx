@@ -1,6 +1,6 @@
 "use client";
 
-import { Message, Persona } from "@prisma/client";
+import { Persona } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, MessageSquare, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -8,20 +8,18 @@ import BotAvatar from "@/components/chat/bot-avatar";
 import ManagePersonaDropdown from "@/components/persona/manage-persona-dropdown";
 
 type ChatHeaderProps = {
-  persona: Persona & {
-    messages: Message[];
-    _count: {
-      messages: number;
-    };
-  };
+  persona: Persona;
+  messageCount: number;
 };
 
-const ChatHeader = ({ persona }: ChatHeaderProps) => {
+const ChatHeader = ({ persona, messageCount }: ChatHeaderProps) => {
   const router = useRouter();
 
   return (
     <header
-      className={"flex w-full items-center justify-between border-b pb-4"}
+      className={
+        "sticky top-0 flex w-full max-w-[800px] items-center justify-between border-b bg-background py-4"
+      }
     >
       <div className={"flex items-center gap-x-2"}>
         <Button onClick={() => router.back()} size={"icon"} variant={"ghost"}>
@@ -33,11 +31,11 @@ const ChatHeader = ({ persona }: ChatHeaderProps) => {
             <p className={"font-bold"}>{persona.name}</p>
             <div className={"flex items-center text-xs text-muted-foreground"}>
               <MessageSquare className={"mr-1 h-3 w-3"} />
-              {persona._count.messages}
+              {messageCount}
             </div>
           </div>
           <p className={"text-xs text-muted-foreground"}>
-            Created by {persona.userName}
+            {/*Created by {persona.userName}*/}
           </p>
         </div>
       </div>

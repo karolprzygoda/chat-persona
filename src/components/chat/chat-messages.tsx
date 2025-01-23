@@ -1,57 +1,36 @@
 "use client";
 
 import { Persona } from "@prisma/client";
-import { ChatMessage, ChatMessageProps } from "@/components/chat/chat-message";
-import { ElementRef, useEffect, useRef, useState } from "react";
+import { Message } from "ai";
+import { ChatMessage } from "@/components/chat/chat-message";
 
 type ChatMessagesProps = {
   persona: Persona;
   isLoading: boolean;
-  messages: ChatMessageProps[];
+  messages: Message[];
+  addToolResult: ({
+    toolCallId,
+    result,
+  }: {
+    toolCallId: string;
+    result: any;
+  }) => void;
 };
 
 const ChatMessages = ({
   persona,
   isLoading,
   messages = [],
+  addToolResult,
 }: ChatMessagesProps) => {
-  const scrollRef = useRef<ElementRef<"div">>(null);
-  const [fakeLoading, setFakeLoading] = useState(messages.length === 0);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setFakeLoading(false);
-    }, 1000);
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, []);
-
-  useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
-
-  return (
-    <div className={"flex-1 overflow-y-auto pr-4"}>
-      <ChatMessage
-        isLoading={fakeLoading}
-        src={persona.src}
-        role={"system"}
-        content={`Hello, I am ${persona.name}, ${persona.description}`}
-      />
-      {messages.map((message) => (
-        <ChatMessage
-          role={message.role}
-          key={message.content}
-          content={message.content}
-          src={persona.src}
-        />
-      ))}
-      {isLoading && <ChatMessage role={"system"} src={persona.src} isLoading />}
-      <div ref={scrollRef}></div>
-    </div>
-  );
+  return messages.map((message) => (
+    <ChatMessage
+      addToolResult={addToolResult}
+      message={message}
+      src={persona.src}
+      key={message.id}
+    />
+  ));
 };
 
 export default ChatMessages;

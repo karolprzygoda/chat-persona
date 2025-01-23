@@ -27,7 +27,7 @@ import {
 import * as React from "react";
 import { useSidebarTriggerContext } from "@/components/sidebar/sidebar-trigger";
 import { useTheme } from "next-themes";
-import { createClient } from "@/lib/supabase/supabaseClient";
+import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import useUser from "@/hooks/useUser";
 

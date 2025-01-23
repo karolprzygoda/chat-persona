@@ -1,6 +1,6 @@
-import { Ellipsis, MessagesSquare } from "lucide-react";
+import { Ellipsis } from "lucide-react";
 import Link from "next/link";
-import { Card, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Persona } from "@prisma/client";
@@ -9,7 +9,6 @@ import camelCase from "next/dist/build/webpack/loaders/css-loader/src/camelcase"
 
 type PersonaCardProps = {
   item: Persona & {
-    _count: { messages: number };
     category: {
       name: string;
     };
@@ -37,7 +36,7 @@ const PersonaCard = ({ item }: PersonaCardProps) => {
         }
         triggerIcon={<Ellipsis className={"h-4 w-4"} />}
       />
-      <Link className={"flex h-full flex-col"} href={`/chat/${item.id}`}>
+      <Link className={"flex h-full flex-col"} href={`/persona/${item.id}`}>
         <CardHeader className={"flex p-0 text-muted-foreground"}>
           <div className={"relative aspect-square w-full"}>
             <Image
@@ -67,21 +66,7 @@ const PersonaCard = ({ item }: PersonaCardProps) => {
                 </Badge>
               </div>
             </div>
-            {/*<p className={"mt-4 line-clamp-3 overflow-hidden text-sm"}>*/}
-            {/*  {item.seed}*/}
-            {/*</p>*/}
           </div>
-          <CardFooter
-            className={
-              "flex items-center justify-between p-4 pt-0 text-xs text-muted-foreground"
-            }
-          >
-            <p className={"lowercase"}>@{item.userName}</p>
-            <div className={"flex items-center"}>
-              <MessagesSquare className={"mr-2 h-3 w-3"} />
-              {item._count.messages}
-            </div>
-          </CardFooter>
         </div>
       </Link>
     </Card>

@@ -1,24 +1,28 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch"]
+  previewFeatures = ["fullTextSearch", "postgresqlExtensions"]
+}
+
+generator json {
+  provider = "prisma-json-types-generator"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [vector]
 }
 
 model Category {
-  id       String    @unique @default(uuid())
+  id       String    @id @default(uuid())
   name     String
   personas Persona[]
 }
 
 model Persona {
-  id           String   @unique @default(uuid())
-  userId       String
-  userName     String
+  id           String   @id @default(uuid())
+  authorId     String
   src          String
   name         String   @db.Text
   description  String
@@ -27,29 +31,68 @@ model Persona {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  category   Category  @relation(fields: [categoryId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId String
-  messages   Message[]
+
+  chat Chat[]
 
   @@index([categoryId])
 }
 
 enum Role {
   user
+  assistant
+  data
   system
 }
 
 model Message {
-  id        String   @id @default(uuid())
-  role      Role
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                      String   @id @default(uuid())
+  role                    Role
+  content                 String   @db.Text
+  /// [ExperimentalAttachments]
+  experimentalAttachments Json?
+  /// [Annotations]
+  annotations             Json?
+  createdAt               DateTime @default(now())
+  /// [Data]
+  data                    Json?
+  /// [ToolInvocations]
+  toolInvocations         Json?
+  revisionId              String?
 
+  chatId String
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+}
+
+model Chat {
+  id        String   @id @default(uuid())
   personaId String
   userId    String
+  createdAt DateTime @default(now())
 
   persona Persona @relation(fields: [personaId], references: [id], onDelete: Cascade)
 
-  @@index([personaId])
+  messages Message[]
+}
+
+model Resource {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  embeddings Embeddings[]
+}
+
+model Embeddings {
+  id         String                      @id @default(uuid())
+  resourceId String
+  embedding  Unsupported("vector(1536)")
+  content    String
+
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 }
